@@ -3,7 +3,9 @@
 Modification to the original package
 -----------------------------------
 -The file "solver.py" has been modified to allow the calculation of the specular reflectance (R_spec) with a certain tolerance angle beta
+
 -The specular reflectance is added into the "results" but doesn't substitute the original R component, so the total reflectance calculations can be made normally
+
 -In order to calculate the specular reflectance, a line like the following must be added after the calculation is made:
 R_det = solver.get_detected_reflectance(beta=desired_tolerance_angle)
 

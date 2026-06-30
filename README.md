@@ -1,5 +1,13 @@
 [![Build](https://github.com/edmundsj/rcwa/actions/workflows/build.yml/badge.svg)](https://github.com/edmundsj/rcwa/actions/workflows/build.yml) [![codecov](https://codecov.io/gh/edmundsj/rcwa/branch/master/graph/badge.svg?token=UDJ1TUESG3)](https://codecov.io/gh/edmundsj/rcwa) [![docs](https://github.com/edmundsj/rcwa/actions/workflows/build-docs.yml/badge.svg)](https://github.com/edmundsj/rcwa/actions/workflows/build-docs.yml) [![PyPI version](https://badge.fury.io/py/rcwa.svg)](https://badge.fury.io/py/rcwa) [![DOI](https://zenodo.org/badge/236611452.svg)](https://zenodo.org/badge/latestdoi/236611452)
 
+Modification to the original package
+-----------------------------------
+-The file "solver.py" has been modified to allow the calculation of the specular reflectance (R_spec) with a certain tolerance angle beta
+-The specular reflectance is added into the "results" but doesn't substitute the original R component, so the total reflectance calculations can be made normally
+-In order to calculate the specular reflectance, a line like the following must be added after the calculation is made:
+R_det = solver.get_detected_reflectance(beta=desired_tolerance_angle)
+
+
 What this package can do
 ===========================
 - Calculate reflectance, transmittance, and scattering parameters from stacks of planar thin films

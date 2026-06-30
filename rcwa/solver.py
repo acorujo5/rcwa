@@ -201,12 +201,35 @@ class Solver:
                                                           self.KzReflectionRegion, self.layer_stack, self.n_harmonics)
         self.T = calculateDiffractionTransmissionEfficiency(self.tx, self.ty, self.tz, self.source,
                                                             self.KzTransmissionRegion, self.layer_stack, self.n_harmonics)
+        # --- NUEVA LÓGICA DE ÁNGULOS ---
+        # Se calcula el ángulo de salida theta de cada orden difractado
+        # k_transversal = sqrt(Kx^2 + Ky^2), donde Kx y Ky son matrices diagonales o vectores.
+        Kx_diag = np.diag(self.Kx) if self.Kx.ndim > 1 else self.Kx
+        Ky_diag = np.diag(self.Ky) if self.Ky.ndim > 1 else self.Ky
+        
+        # Angulo de salida respecto a la normal para cada orden
+        # Usamos np.arcsin(k_transversal / n_inc)
+        n_inc = np.real(self.layer_stack.incident_layer.er**0.5)
+        k_transverse = np.sqrt(Kx_diag**2 + Ky_diag**2)
+        self.theta_orders = np.rad2deg(np.arcsin(np.clip(np.real(k_transverse) / n_inc, -1, 1)))
+        # -------------------------------
+        
         self.RTot = np.sum(self.R)
         self.TTot = np.sum(self.T)
         self.conservation = self.RTot + self.TTot
 
         if self.TMMSimulation:
             self.rTEM = calculateTEMReflectionCoefficientsFromXYZ(self.source, self.rx, self.ry, self.rz)
+
+
+    # AÑADO UNA FUNCIÓN PARA PODER HALLAR ÚNICAMENTE REFLECTANCIA ESPECULAR
+    def get_detected_reflectance(self, beta=0.1):
+        # Devuelve la R dentro del cono de detección definido por beta
+        theta_specular = self.source.theta
+        mask = np.abs(self.theta_orders - np.rad2deg(theta_specular)) <= (beta/2)
+
+        return np.sum(self.R[mask])
+    
 
     def _package_results(self):
         """
@@ -241,6 +264,8 @@ class Solver:
         tempResults['rx'], tempResults['ry'], tempResults['rz'] = deepcopy((self.rx, self.ry, self.rz))
         tempResults['tx'], tempResults['ty'], tempResults['tz'] = deepcopy((self.tx, self.ty, self.tz))
         tempResults['R'], tempResults['T'] = deepcopy((self.R, self.T))
+        # Añado mis resultados parciales (r_spec / r_det) al diccionario de resultados
+        tempResults['theta_orders'] = deepcopy(self.theta_orders)
         tempResults['RTot'], tempResults['TTot'], tempResults['conservation'] = \
                 deepcopy((self.RTot, self.TTot, self.conservation))
         tempResults['crystal'] = deepcopy(self.base_crystal)
